@@ -2,6 +2,7 @@
 ### Williams College
 ### A collection of scraping functions for different news sources
 ### Copyright 2017
+#
 
 #import the library used to query a website
 from urllib.request import Request, urlopen
