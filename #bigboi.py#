@@ -9,7 +9,6 @@ from selenium import webdriver
 
 
 #how to deal with paywalls
-
 def get_soup(url):
     """
     This opens the selenium browser to the url that we want and builds
@@ -25,7 +24,6 @@ def get_soup(url):
     html = driver.page_source
     soup = BeautifulSoup(html)
     return soup
-
 
 
 def find_internal_urls(url_root, urls):
