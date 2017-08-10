@@ -3,7 +3,7 @@ library(rvest)
 
 #I think that this can be sped up quite a bit by spreading it across a few cores ask the CS department
 
-#'we want to find all the urls that are associated with a url_root
+#'Finds all the urls that are associated with a url_root
 #'(a base site) or a list of urls so that it can be called recursively
 #'
 #'@param url_root - the base of the url for all the sites that we want to parse(the home site)
@@ -14,7 +14,6 @@ library(rvest)
 find_internal_urls <- function(url_root, urls = NULL){
   non_secure_url_root <- paste0(substr(url_root, 1, 4),substr(url_root, 5, nchar(url_root)))
   print(non_secure_url_root)
-  #print(nchar(url_root))
   #we first check if we are just doing the first call (from the base) or not
   if(is.null(urls)){
     root_links <- character()
@@ -22,8 +21,6 @@ find_internal_urls <- function(url_root, urls = NULL){
     loaded_html <- read_html(url_root)
     possible_root_links <- loaded_html %>% html_nodes("a") %>% html_attr("href")
     for(tag in possible_root_links){
-      #print(substr(tag,1,(nchar(url_root) - 1)))
-      #print(paste0("the cut tag is: ",tag[1:nchar(url_root)]))
       if(!is.na(tag) & ((substr(tag,1,(nchar(url_root)) ) == url_root) | 
          (substr(tag,1,(nchar(url_root) - 1)) == non_secure_url_root))){
         root_links <- c(root_links, tag)
@@ -53,7 +50,18 @@ find_internal_urls <- function(url_root, urls = NULL){
   }
 }
 
-find_urls <- function(url_root, depth){
+
+
+#'Searches the list of urls HTML for links whose root is url_root
+#'
+#'@param url_root - the base url for the sites that we want to include
+#'example: "https://example.com" would be the root for "https://example.com/exampleChain"
+#'@param depth - the amount of "layers" that we want to parse i.e. the amount of times we want to 
+#'recursively call the function. We have this b/c after a few iteration we can have a massive amount of matches
+#'and we might want to limit the search because of time constraints or possibly we aren't finding anything new
+#'
+#'@return a vector of links that correspond to the links associated with a site
+find_urls_single_source <- function(url_root, depth){
   links <- find_internal_urls(url_root = url_root)
   for(level in 1:depth){
     links <- find_internal_urls(url_root = url_root, urls = unique(links[!is.na(links)]))
@@ -61,19 +69,103 @@ find_urls <- function(url_root, depth){
   return(links)
 }
 
-#this is to actually parse the article and find occurences of our keywords
-article_analysis <- function(url, term_list, element_selector_list, text_selector){
-  loaded <- read_html(url)
-  article_text <- loaded_html %>% html_nodes(loaded, text_selector)
-  for(selector in article_text){
-    titles <- html_nodes(loaded, selector)
-    text <- html_text(titles)
+
+
+#'Searches the text of an article for occurences of our terms and return either NULL if there are none or
+#'the title, source, url, date of publishing and term counts if any of the terms are there
+#'
+#'@param url - the link to the site that we want to search
+#'@param source - the name of the source (can be anything it is only for a direct return so we can easily automate)
+#'@param terms - a character vector of the terms we want to search for
+#'@note - all selectors should be the least restrictive we can find i.e "p" is preferred to "p article"
+#'@param title_selector - the CSS selector for the article title
+#'@param published_selector - the CSS selector for the publishing date
+#'@param text_selector - the CSS selector for the text of the article that we want to parse for our terms
+#'
+#'@return either NULL if none of our terms are in the article or the title, source, url, 
+#'date of publishing and term counts if any of the terms are there
+article_analysis <- function(url, source, terms, title_selector, published_selector, text_selector){
+  #(1) first we build regex for our terms so that they can be accurately searched
+  terms_regex <- character()
+  for(term in terms){
+    terms_regex <- c(terms_regex, paste0("\\W*((?i)", term, "(?-i))\\W*"))
   }
-    return(text)
+  #(2) next we make an empty list to store our counts
+  term_counts <- vector("list", length(terms))
+  names(term_counts) <- terms_regex
+  #(3) now we are ready to actually read in the text of our article
+  loaded_html <- read_html(url)
+  article_text <- loaded_html %>% html_nodes(text_selector) %>% html_text()
+  #(4) now to check for our terms in the article
+  #I want to occurences and counts of singular words and of word combos
+  #first we do single words by splitting the text on one space and filtering the regex to single terms
+  paired_indices <- grep(" ", terms_regex)
+  #so at this point there are three possibilities and we handle them all
+  #possibility 1 - there are no paired words in our terms, so length(paired_indices) will be 0
+  #possibility 2 - there are no single words in our terms, so length(paired_indices) will be length(terms_regex)
+  #possibility 3 - we have a mixture of single and paired words in our term set
+  #possiblity 1
+  if(length(paired_indices) == 0){
+    single_regex <- terms_regex
+    single_words_in_article <- unlist(strsplit(article_text, " "))
+    for(index in 1:length(single_regex)){
+      term_counts[[single_regex[index]]] <- length(grep(single_regex[index], single_words_in_article, value = FALSE))
+    }
+    #possibility 2
+  }else if(length(paired_indices) == length(terms_regex)){
+    paired_regex <- terms_regex[paired_indices]
+    single_regex <- terms_regex[-(paired_indices)]
+    #the words in the article
+    single_words_in_article <- unlist(strsplit(article_text, " "))
+    odd_words <- single_words_in_article[c(TRUE,FALSE)]
+    even_words <- single_words_in_article[c(FALSE,TRUE)]
+    #the words in pairs of two in the article
+    odd_pairings <- paste(odd_words, even_words)
+    even_pairings <- paste(even_words, odd_words)
+    for(index in 1:length(paired_regex)){
+      term_counts[[paired_regex[index]]] <- length(grep(paired_regex[index], even_pairings, value = FALSE))
+      term_counts[[paired_regex[index]]] <- term_counts[[paired_regex[index]]] + length(grep(paired_regex[index], odd_pairings, value = FALSE))
+    }
+    #possibility 3
+  }else{
+    paired_regex <- terms_regex[paired_indices]
+    single_regex <- terms_regex[-(paired_indices)]
+    #the words in the article
+    single_words_in_article <- unlist(strsplit(article_text, " "))
+    odd_words <- single_words_in_article[c(TRUE,FALSE)]
+    even_words <- single_words_in_article[c(FALSE,TRUE)]
+    #the words in pairs of two in the article
+    odd_pairings <- paste(odd_words, even_words)
+    even_pairings <- paste(even_words, odd_words)
+    for(index in 1:length(single_regex)){
+      term_counts[[single_regex[index]]] <- length(grep(single_regex[index], single_words_in_article, value = FALSE))
+    }
+    #now I check the word combos
+    for(index in 1:length(paired_regex)){
+      term_counts[[paired_regex[index]]] <- length(grep(paired_regex[index], even_pairings, value = FALSE))
+      term_counts[[paired_regex[index]]] <- term_counts[[paired_regex[index]]] + length(grep(paired_regex[index], odd_pairings, value = FALSE))
+    }
+  }
+  title <- html_nodes(loaded_html, title_selector) %>% html_text()
+  published_date <- html_nodes(loaded_html, published_selector) %>% html_text()
+  #we return null if we did not find any of our terms
+  terms_empty <- all(as.numeric(unlist(term_counts)) == 0)
+  if(terms_empty){
+    return(NULL)
+  }
+  #we return the source, title, published date, url and term counts if any of our terms are in the article
+  names(term_counts) <- names(terms)
+  return(c(source, title, published_date, url, term_counts))
 }
 
-#i can do a listing of single words and a listing of bound words!
-test_terms <- c("king", "arab")
-element_selectors <- c("time", "h1")
-k <- article_analysis(url = "http://www.arabnews.com/node/1137746/saudi-arabia", )
+test_terms <- c("king", "salman on")
+#We want the least restrictive selectors
+title_CSS <- "h1"
+published_CSS <- ".entry-meta time"
+text_CSS <-  ".hide-for-small-only"
+
+
+k <- article_analysis(url = "http://www.arabnews.com/node/1137746/saudi-arabia", source = "Arab News",terms = test_terms, title_selector = title_CSS  ,published_selector = published_CSS, text_selector = text_CSS)
+
+#now I can just loop through my find_urls using article_analysis and we are donezo!
 
