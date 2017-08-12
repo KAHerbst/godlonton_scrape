@@ -19,4 +19,4 @@ It is likely to be an incomplete listing for the site b/c a site might not link 
 There may be paywalls for some of our sources and unless we get logins for those then we are stuck. 
 
 # STEP (2) Using our associated Urls from (1) and finding/counting all occurences of our keywords
-I used the CSS selectors from article sources for every source and in tandem with rvest was able to extract the information we needed in a fairly straightforward way. So now we are returning title, source, url, published date and counts for our specified terms which is exactly what we wanted.
+I used the CSS selectors from article sources for every source and in tandem with rvest was able to extract the information we needed in a fairly straightforward way. So now we are returning title, source, url, published date and counts for our specified terms which is exactly what we wanted. I also spent a pretty long time on getting all the CSS selectors for the english sources and formatting the url_roots so that we can actually traverse from the url_root up for all sources.
