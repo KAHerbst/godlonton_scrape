@@ -1,0 +1,83 @@
+"
+source_name",url,title,published_date,text
+saudi_news_agency,http://www.spa.gov.sa/home.php?lang=en,#h4NewsTitle,.socal_share,.divNewsDetailsText
+gulf_news,http://gulfnews.com/,.story-title,.time,.wrapper-details
+south_china morning post,http://www.scmp.com/frontpage/international,#page-title,.node-published,#block-system-main .v2-processed
+kuwait times,http://news.kuwaittimes.net/website/,.entry_title,td,p
+the strait times,http://www.straitstimes.com/global,.node-title,.story-postdate,p
+Today,http://www.todayonline.com/,h2,.post-byline_item,p
+Business times,http://www.businesstimes.com.sg/,.headline,.date-icon,p
+the new paper,http://www.tnp.sg/,.story-headline,.field-label-hidden,p
+new straits times,http://www.nst.com.my/,.ph-wrapper,.post-date,p
+the sun,http://www.thesundaily.my/,.page-title,.submitted,p
+gulf daily news,http://www.gdnonline.com/,.oswald.nomarginpadding,.icotime,p
+the province,http://www.theprovince.com,.entry-title,.byline-dates p:nth-child(1),p
+daily mail,http://www.dailymail.co.uk/ushome/index.html,h1,.article-timestamp-published,.mol-para-with-font
+the guardian,http://www.theguardian.com/,.content__headline,.content__dateline,p
+marianas business journal - saipan,http://mbjguam.com/,.entry-title,.published,p
+daly mirror,http://www.mirror.co.uk/,.section-theme-background-indicator,.time-info li,p
+marianas variety news and views - saipan,http://www.mvariety.com,.contentheading,.article-info,p
+daily star,http://www.dailystar.co.uk/,.clear,time,p
+cyrpus mail,http://www.cyprus-mail.com,h1,.fa-calendar,p
+daily express,http://www.express.co.uk/,h1,.publish-info,p
+the daily star (bangladesh),http://www.dailystar.co.uk/,h1,.small-text,p
+tripoli post,http://www.tripolipost.com/,.LargeHeaders,.DateFormat,.Normaltext
+Jewish telegraphic agency,http://www.jta.org/,.loop-entry-title,"time, .entry-date",p
+jns,http://www.jns.org/,.post-title,.meta,p
+oman tribune,http://omantribune.com/,.entry-title,.meta-info,p
+muscat daily,http://www.muscatdaily.com/,h1,.date,p
+the sun,http://www.thesun.co.uk/,.article__headline,.article__published,.article__content p
+vancouver sun,http://vancouversun.com/,.entry-title,.byline-dates,p
+toronto sun,http://www.torontosun.com/,.entry-title,.meta,p
+national post,http://www.nationalpost.com/,.entry-title,.pubdate,p
+calgary herald,http://calgaryherald.com/,.entry-title,.pubdate,p
+CNN,http://cnn.com/,.pg-headline,.update-time,.zn-body
+huffington post,http://www.huffingtonpost.com/,.headline__title,.timestamp,p
+fox news,http://www.foxnews.com/,.head1,.date,.article-body
+cbs news,http://www.cbsnews.com/,h1,.time,#article-entry p
+msnbc,http://www.msnbc.com/,.pane-node-title,.article-date-posted,.field-label-hidden
+NBC news,http://www.nbcnews.com/,h1,.timestamp_article,p
+WSJ,http://www.wsj.com/,.wsj-article-headline,.timestamp,p
+the nyt,http://www.nytimes.com/,#headline,#story-meta-footer,.story-content
+usa today,http://www.usatoday.com/,.speakable-headline,.nobyline,.p-text
+the washington post,http://www.washingtonpost.com/,h1,.pb-timestamp,p
+chicago sun times,http://chicago.suntimes.com/,h1,.top-date,p
+the times(UK),http://www.thetimes.co.uk/,.Headline--article,.Dateline,p
+daily record (UK),http://www.dailyrecord.co.uk/,.section-theme-background-indicator,.time-info li,p
+ammon news,http://en.ammonnews.net/,#_DataList1 h3,.Article-News-Date,p
+Kuam News,http://www.kuam.com/,h3,.wnDate,#WNStoryBody p
+Pacific Daily News (EN),http://www.guampdn.com/,.speakable-headline,.nobyline,.p-text
+philippine daily inquirer,http://www.inquirer.net/,.entry-title,#art_plat,p
+the manila times,http://www.manilatimes.net/,.fn,.value-title,p
+Business World ,http://www.bworldonline.com/,.entry-title,.td-module-date,p
+Saipan Tribune – Saipan (U),http://www.saipantribune.com/,.blog-title a,.blog-date a,p
+News In Cyprus — online (U),http://www.newsincyprus.com/,h1,.single-article span:nth-child(1),p
+i,http://inews.co.uk/,.article__heading,.published,p
+Daily Telegraph,http://www.telegraph.co.uk/,headline__heading,.article-date-published,p
+The Week,http://www.theweek.co.om/,h1,.date,p
+Times of Oman,http://timesofoman.com/,.L9black-bold,.wrapArticleDateCss,p
+Oman Daily Observer (U),http://omanobserver.om/,#content .entry-title,,p
+The Daily Star lebanon,http://dailystar.com.lb/,#bodyHolder_divTitle,#bodyHolder_divDate,p
+The Gazette,http://montrealgazette.com/,.entry-title,.byline-dates,p
+Arab News,http://www.arabnews.com/,h1,.entry-meta time,p
+Arab Times (U),http://www.arabtimesonline.com/news/,#the-post span,.tie-date,p
+New York Post (U),http://nypost.com/,#article-wrapper .postId-,.byline_date,p
+Los Angeles Times (U),http://www.latimes.com/,,,p
+Borneo Bulletin (U),http://borneobulletin.com.bn/,,,
+The Brunei Times (C),http://www.bt.com.bn,,,
+CBC (U),http://www.alexa.com/siteinfo/cbc.ca,,,
+Toronto Star (U),http://www.thestar.com,.article__headline,.artilce__published-date,.article-story-body
+The Globe and Mail (UP),http://www.theglobeandmail.com/,,,
+Metro (U),http://metro.co.uk/,.clear,.post-date,p
+Evening Standard (U),http://www.standard.co.uk/,,,
+Financial Times (P),http://www.ft.com/,,,
+The Jordan Times (U),http://www.jordantimes.com/,,,
+The Star (U),http://www.star.com.jo/,,,
+Pacific News Center (U embedded),http://www.pacificnewscenter.com/,.entry-title,.td-module-date,p
+manila bulletin (U),http://mb.com.ph/,#tim-content .uk-margin-bottom-remove,.published_date,p
+the philippine star (P),http://thephilippinestar.ph/,#page-title,.article-date-info,p
+the denver post (Unrel),http://www.denverpost.com/,.optimizely-2747651,.time,.body-copy
+chicago tribune (U),http://www.chicagotribune.com/,.trb_ar_hl_t,.trb_ar_dateline_time,p
+daily news (U),http://www.nydailynews.com/,#ra-headline,#ra-date-published,p
+the star (embedded),http://www.thestar.com.my/,.headline,,p
+BBC (EU),http://www.bbc.com/,.story-body__h1,,p
