@@ -1,19 +1,22 @@
 #install.packages("rvest")
 library(rvest)
-
+options(stringsAsFactors = FALSE)
 #I think that this can be sped up quite a bit by spreading it across a few cores ask the CS department
+
+k <- NULL
 
 #'Finds all the urls that are associated with a url_root
 #'(a base site) or a list of urls so that it can be called recursively
 #'
 #'@param url_root - the base of the url for all the sites that we want to parse(the home site)
-#'@param urls(optional unless recursing) - a list of urls that we want to find links that chain directly off
+#'@param urls(optional unless recursing) - a list of urls that we want to find links froms
+#'@param chained - tells us whether or not our source links with included roots(TRUE) or without(FALSE)
 #'
 #'@return - all the urls associated with the url_root that base themselves off the url_root OR if urls is specified
 #'all the urls found within the pages of urls that base themselves off url_root
-find_internal_urls <- function(url_root, urls = NULL){
+find_internal_urls <- function(url_root, urls = NULL, chained = TRUE){
   non_secure_url_root <- paste0(substr(url_root, 1, 4),substr(url_root, 5, nchar(url_root)))
-  print(non_secure_url_root)
+  #print(non_secure_url_root)
   #we first check if we are just doing the first call (from the base) or not
   if(is.null(urls)){
     root_links <- character()
@@ -21,33 +24,88 @@ find_internal_urls <- function(url_root, urls = NULL){
     loaded_html <- read_html(url_root)
     possible_root_links <- loaded_html %>% html_nodes("a") %>% html_attr("href")
     for(tag in possible_root_links){
-      if(!is.na(tag) & ((substr(tag,1,(nchar(url_root)) ) == url_root) | 
-         (substr(tag,1,(nchar(url_root) - 1)) == non_secure_url_root))){
+      if(!is.na(tag)){
         root_links <- c(root_links, tag)
       }
     }
     return(root_links)
     #if not we are away from the home page and want to check every url in
     #our urls vector for similarity to the url_root and catalog it if so
-  }else{
+  } else{
     urls_sub_level <- character()
-    for(url in urls){
-      tryCatch({loaded_html <- read_html(url)
-               possible_tags <- loaded_html %>% html_nodes("a") %>% html_attr("href")},
-               warning = function(e){warning("there was a warning thrown")},
-               error = function(e){message(paste("URL does not seem to exist:", url))
-                                   message("Here's the original error message:")
-                                   message(e)
-                 return(NA)})
-      for(tag in possible_tags){
-        if(!is.na(tag) & ((substr(tag,1,(nchar(url_root)) ) == url_root) | 
-                          (substr(tag,1,(nchar(url_root) - 1)) == non_secure_url_root))){
-          urls_sub_level <- c(urls_sub_level, tag)
+    if (chained == TRUE) {
+      for (url in urls) {
+        possible_tags <- NA
+        print("checking rooted")
+        #we check those that should include the root
+        tryCatch({
+          loaded_html <- read_html(url)
+          possible_tags <- loaded_html %>% html_nodes("a") %>% html_attr("href")
+        },
+        warning = function(e) {
+          warning("there was a warning thrown")
+        },
+        error = function(e) {
+          message("There was a problem with this link: ")
+          message(e)
+          possible_tags <<- NA
+        })
+        if (!is.na(possible_tags)) {
+          for (tag in possible_tags) {
+            if (!is.na(tag) & ((substr(tag, 1, (
+              nchar(url_root)
+            )) == url_root) |
+            (substr(tag, 1, (
+              nchar(url_root) - 1
+            )) == non_secure_url_root))) {
+              urls_sub_level <- c(urls_sub_level, tag)
+            }
+          }
         }
       }
+    } else{
+      #we check to see if the chain is not direct i.e. the root is not included
+      #for reasons unknown some of our sources do this?
+      for(url in urls){
+        possible_tags <- NA
+        print("checking unchained")
+        tryCatch({
+          loaded_html <- read_html(paste0(url_root, url))
+          print(paste0(url_root, url))
+          possible_tags <- loaded_html %>% html_nodes("a") %>% html_attr("href")
+          print("after loaded")
+        },
+        warning = function(e) {
+          warning("there was a warning thrown")
+        },
+        error = function(e) {
+          message("There was a problem with this link: ")
+          message(e)
+          possible_tags <- NA
+        })
+        print("after trycatch")
+
+        if (!is.na(possible_tags)) {
+          print("in loop")
+          for (tag in possible_tags) {
+            print("where")
+            if (!is.na(tag)) {
+              print("here?")
+              urls_sub_level <- c(urls_sub_level, tag)
+              print("no?")
+            }
+            print("1")
+          }
+          print("2")
+        }
+        print("3")
+      }
+      print("4")
     }
-    return(urls_sub_level)
+    print("5")
   }
+  print('6')
+  return(urls_sub_level)
 }
 
 
@@ -61,10 +119,10 @@ find_internal_urls <- function(url_root, urls = NULL){
 #'and we might want to limit the search because of time constraints or possibly we aren't finding anything new
 #'
 #'@return a vector of links that correspond to the links associated with a site
-find_urls_single_source <- function(url_root, depth){
-  links <- find_internal_urls(url_root = url_root)
+find_urls_single_source <- function(url_root, depth, chained = TRUE){
+  links <- find_internal_urls(url_root = url_root, chained = chained)
   for(level in 1:depth){
-    links <- find_internal_urls(url_root = url_root, urls = unique(links[!is.na(links)]))
+    links <- find_internal_urls(url_root = url_root, urls = unique(links[!is.na(links)]), chained = chained)
   }
   return(links)
 }
@@ -84,7 +142,7 @@ find_urls_single_source <- function(url_root, depth){
 #'
 #'@return either NULL if none of our terms are in the article or the title, source, url, 
 #'date of publishing and term counts if any of the terms are there
-article_analysis <- function(url, source, terms, title_selector, published_selector, text_selector){
+single_article_analysis <- function(url, source, terms, title_selector, published_selector, text_selector){
   #(1) first we build regex for our terms so that they can be accurately searched
   terms_regex <- character()
   for(term in terms){
@@ -158,14 +216,47 @@ article_analysis <- function(url, source, terms, title_selector, published_selec
   return(c(source, title, published_date, url, term_counts))
 }
 
-test_terms <- c("king", "salman on")
-#We want the least restrictive selectors
-title_CSS <- "h1"
-published_CSS <- ".entry-meta time"
-text_CSS <-  ".hide-for-small-only"
+m <- NULL
 
-
-k <- article_analysis(url = "http://www.arabnews.com/node/1137746/saudi-arabia", source = "Arab News",terms = test_terms, title_selector = title_CSS  ,published_selector = published_CSS, text_selector = text_CSS)
-
-#now I can just loop through my find_urls using article_analysis and we are donezo!
-
+source_analysis <- function(url_root, depth, source, terms, title_selector, published_selector, text_selector, chained = TRUE){
+  source_hits <- list()
+  print("who who")
+  linked_urls <- find_urls_single_source(url_root, depth, chained = chained)
+  m <<- linked_urls
+  print("what what")
+  list_index <- 1
+  print("it must be here")
+  for(url in linked_urls){
+    if(substr(url,1,1) == "#"){
+      next
+    }
+    print(url)
+    print("close")
+    #it keeps interpreting them as paths to a directory!
+    if(chained == TRUE){
+      print("what is happening")
+      single_article <- single_article_analysis(url = paste0(url_root,url), source = source, terms =terms, title_selector = title_selector, published_selector = published_selector, text_selector = text_selector)
+      print("was it that?")
+    }else{
+      single_article <- single_article_analysis(url = url, source = source, terms = terms, title_selector = title_selector, published_selector = published_selector, text_selector = text_selector)
+    }
+    print("closer")
+    if(!is.null(single_article)){
+      source_hits[[list_index]] <- single_article
+      list_index <- list_index + 1
+    }
+  }
+  return(source_hits)
+}
+  
+test_time <- Sys.time()
+#first we grab all the meta data that we need
+source_data <- read.csv("/Users/konnorherbst/williams/godlonton_scrape/english_identifiers.csv", header = TRUE)
+names <- source_data[[1]]
+roots <- source_data[[2]]
+title_selectors <- source_data[[3]]
+date_selectors <- source_data[[4]]
+text_selectors <- source_data[[5]]
+terms_to_search <- c("migrant")
+m <- source_analysis(url_root = roots[1], depth = 1, source = names[1], terms = terms_to_search, title_selector = title_selectors[1], published_selector = date_selector[1], text_selector = text_selectors[1], chained = FALSE)
+print(paste0("Time to run: ", Sys.time() - test_time))
