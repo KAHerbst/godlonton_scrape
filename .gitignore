@@ -1,4 +1,5 @@
 # ENVIRONMENT #
 venv
 geckodriver
+.Rproj.user
 archive
