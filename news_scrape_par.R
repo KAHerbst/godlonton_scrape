@@ -1,7 +1,9 @@
 #install.packages("rvest")
 #install.pacakges("parallel")
+library(doParallel)
 library(rvest)
 options(stringsAsFactors = FALSE)
+
 
 #'Finds all the urls that are associated with a url_root
 #'(a base site) or a list of urls so that it can be called recursively
@@ -187,10 +189,16 @@ source_analysis <- function(url, source, terms, title_selector, published_select
 
 
 source_data <- read.csv("/Users/konnorherbst/williams/godlonton_scrape/english_identifiers.csv", header = TRUE)
+#This code is for parallel execution
+cores <- detectCores() - 1
+cl <- makeCluster(cores)
+registerDoParallel(cores = cl)
+on.exit(stopCluster(cl))
 
-#discovered <- find_urls_single_source(urls = source_data[[2]][1], depth = 1)
 
-#I recommend a depth of 5
-m <- source_analysis(url = source_data[[2]][1], source = source_data[[1]][1], terms = c("prince, saudi", "federal"), title_selector = source_data[[4]][1], published_selector = source_data[[5]][1], text_selector = source_data[[6]][1], chain_base = source_data[[3]][1], depth = 5)
-
-#now I can just loop through my find_urls using article_analysis and we are donezo!
+#I recommend a depth of 3
+#Here we are going through all of our sources for hits and returning them in matrix format
+combed_list <- list()
+foreach(index = 1:nrow(source_data)) %dopar%{
+  combed_data[[index]] <- source_analysis(url = source_data[[2]][index], source = source_data[[1]][index], terms = c("prince, saudi", "federal"), title_selector = source_data[[4]][index], published_selector = source_data[[5]][index], text_selector = source_data[[6]][index], chain_base = source_data[[3]][index], depth = 3)
+}
